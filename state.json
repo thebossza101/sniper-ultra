@@ -1,0 +1,60 @@
+{
+  "bot_running": true,
+  "timestamp": "18:54:54",
+  "current_price": 4339.554,
+  "spread": 280,
+  "session": "LONDON",
+  "atr": 5.92,
+  "total_score": 79,
+  "direction": "NEUTRAL",
+  "zone_status": "NO_ZONE",
+  "recommendation": "WAIT",
+  "open_positions": 0,
+  "gates": {
+    "candle_gate": false,
+    "zone_gate": false,
+    "vote_gate": false,
+    "noconflict_gate": true
+  },
+  "voting": {
+    "bull": 2,
+    "bear": 0,
+    "alignment": "NEUTRAL"
+  },
+  "breakdown": {
+    "snd": {
+      "score": 10,
+      "max": 30
+    },
+    "smc": {
+      "score": 13,
+      "max": 45
+    },
+    "elliot": {
+      "score": 11,
+      "max": 20
+    },
+    "fib": {
+      "score": 5,
+      "max": 20
+    },
+    "liquidity": {
+      "score": 20,
+      "max": 25
+    },
+    "candlestick": {
+      "score": 0,
+      "max": 30,
+      "confirmed": false,
+      "type": "",
+      "strength": 0
+    },
+    "triple_screen": {
+      "score": 20,
+      "max": 30,
+      "htf_impulse": "GREEN",
+      "ltf_impulse": "RED"
+    }
+  },
+  "last_seen": "11:54:54"
+}

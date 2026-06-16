@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNIPER ULTRA — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    background: #0a0a0f; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh; overflow-x: hidden;
+}
+.container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+
+/* Header */
+.header { 
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0 16px; border-bottom: 1px solid #1e1e2e; margin-bottom: 16px;
+}
+.header h1 { 
+    font-size: 20px; font-weight: 700; color: #c8ff00;
+    letter-spacing: 1px; text-transform: uppercase;
+}
+.header .subtitle { color: #666; font-size: 12px; }
+.header .status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+}
+.status-dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+}
+.status-dot.online { background: #22c55e; box-shadow: 0 0 8px #22c55e66; }
+.status-dot.offline { background: #ef4444; box-shadow: 0 0 8px #ef444466; }
+.timestamp { color: #666; font-size: 11px; }
+
+/* Grid */
+.grid { display: grid; gap: 12px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+@media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+/* Cards */
+.card {
+    background: #12121a; border: 1px solid #1e1e2e;
+    border-radius: 10px; padding: 16px;
+}
+.card-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: #666; margin-bottom: 10px; font-weight: 600;
+}
+.card-value {
+    font-size: 28px; font-weight: 700; color: #fff;
+}
+.card-value.green { color: #22c55e; }
+.card-value.red { color: #ef4444; }
+.card-value.gold { color: #c8ff00; }
+
+/* Score Gauge */
+.score-container { text-align: center; padding: 8px 0; }
+.score-number { font-size: 56px; font-weight: 800; line-height: 1; }
+.score-text { font-size: 12px; color: #666; margin-top: 4px; }
+
+/* Score bars */
+.score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+.score-label { width: 90px; color: #888; flex-shrink: 0; }
+.score-bar-bg { flex: 1; height: 16px; background: #1a1a2a; border-radius: 4px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.score-val { width: 40px; text-align: right; font-weight: 600; font-size: 12px; }
+
+/* Gates */
+.gate { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.gate-icon { font-size: 16px; width: 20px; }
+.gate-name { font-size: 12px; color: #888; }
+.gate-status { font-size: 11px; font-weight: 600; }
+.gate.pass .gate-status { color: #22c55e; }
+.gate.fail .gate-status { color: #ef4444; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; padding: 6px 8px; color: #666; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #1e1e2e; }
+td { padding: 6px 8px; border-bottom: 1px solid #16161f; color: #ccc; }
+tr:hover td { background: #16161f; }
+.win { color: #22c55e; font-weight: 600; }
+.loss { color: #ef4444; font-weight: 600; }
+
+/* Logs */
+.log-container { 
+    max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace;
+    font-size: 11px; line-height: 1.6;
+}
+.log-line { padding: 1px 0; color: #666; }
+.log-line:hover { color: #aaa; }
+.log-line .time { color: #444; }
+.log-line .lvl-INFO { color: #3b82f6; }
+.log-line .lvl-WARN { color: #f59e0b; }
+.log-line .lvl-ERROR { color: #ef4444; }
+
+/* Status row */
+.stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+.stat-label { color: #666; }
+.stat-value { color: #ccc; }
+
+/* Recommendation badge */
+.badge {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+}
+.badge.entry { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+.badge.wait { background: #f59e0b22; color: #f59e0b; border: 1px solid #f59e0b44; }
+.badge.skip { background: #6366f122; color: #6366f1; border: 1px solid #6366f144; }
+
+/* Mini price ticker */
+.price-ticker { display: flex; align-items: center; gap: 12px; }
+.price-current { font-size: 22px; font-weight: 700; color: #fff; }
+.price-change { font-size: 13px; }
+.price-change.up { color: #22c55e; }
+.price-change.down { color: #ef4444; }
+
+/* Module bars colors */
+.c-snd { background: #8b5cf6; }
+.c-smc { background: #3b82f6; }
+.c-elliot { background: #06b6d4; }
+.c-fib { background: #f59e0b; }
+.c-liq { background: #ec4899; }
+.c-cdl { background: #22c55e; }
+.c-ts { background: #c8ff00; color: #000; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0a0a0f; }
+::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>SNIPER ULTRA</h1>
+            <div class="subtitle">XAUUSD · Exness · 1:2000 · <span id="refreshTime">0</span>s ago</div>
+        </div>
+        <div class="status">
+            <span class="status-dot offline" id="statusDot"></span>
+            <span id="statusText">Connecting...</span>
+            <span class="timestamp" id="timestamp"></span>
+        </div>
+    </div>
+
+    <!-- Row 1: Price + Score + Session -->
+    <div class="grid grid-3" style="margin-bottom: 12px;">
+        <!-- Price -->
+        <div class="card">
+            <div class="card-title">XAUUSD · Current Price</div>
+            <div class="price-ticker">
+                <span class="price-current" id="priceVal">---</span>
+                <span class="price-change" id="priceChange">--</span>
+            </div>
+            <div class="stat-row"><span class="stat-label">Session</span><span class="stat-value" id="sessionVal">---</span></div>
+            <div class="stat-row"><span class="stat-label">Spread</span><span class="stat-value" id="spreadVal">---</span></div>
+            <div class="stat-row"><span class="stat-label">ATR (M15)</span><span class="stat-value" id="atrVal">---</span></div>
+        </div>
+
+        <!-- Score -->
+        <div class="card">
+            <div class="card-title">Confluence Score</div>
+            <div class="score-container">
+                <div class="score-number" id="scoreVal" style="color:#666;">0</div>
+                <div class="score-text">/ 200 · <span id="directionVal">---</span></div>
+            </div>
+        </div>
+
+        <!-- Recommendation + Gates -->
+        <div class="card">
+            <div class="card-title">Entry Gates</div>
+            <div class="gate pass" id="gate1"><span class="gate-icon">✅</span><span class="gate-name">Score ≥ 120</span><span class="gate-status" id="g1s">WAIT</span></div>
+            <div class="gate pass" id="gate2"><span class="gate-icon">✅</span><span class="gate-name">In Zone</span><span class="gate-status" id="g2s">WAIT</span></div>
+            <div class="gate pass" id="gate3"><span class="gate-icon">✅</span><span class="gate-name">M1 Confirmed</span><span class="gate-status" id="g3s">WAIT</span></div>
+            <div class="gate pass" id="gate4"><span class="gate-icon">✅</span><span class="gate-name">Strength ≥ 2/3</span><span class="gate-status" id="g4s">WAIT</span></div>
+            <div style="margin-top: 8px; text-align: center;">
+                <span class="badge" id="recBadge">WAITING</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Module Breakdown + Zone -->
+    <div class="grid grid-2" style="margin-bottom: 12px;">
+        <div class="card">
+            <div class="card-title">7 Module Breakdown</div>
+            <div id="moduleScores">
+                <div class="score-row"><span class="score-label">SnD</span><div class="score-bar-bg"><div class="score-bar-fill c-snd" style="width:0%"></div></div><span class="score-val" id="m-snd">0/30</span></div>
+                <div class="score-row"><span class="score-label">SMC</span><div class="score-bar-bg"><div class="score-bar-fill c-smc" style="width:0%"></div></div><span class="score-val" id="m-smc">0/45</span></div>
+                <div class="score-row"><span class="score-label">Elliot Wave</span><div class="score-bar-bg"><div class="score-bar-fill c-elliot" style="width:0%"></div></div><span class="score-val" id="m-elliot">0/20</span></div>
+                <div class="score-row"><span class="score-label">Fibonacci</span><div class="score-bar-bg"><div class="score-bar-fill c-fib" style="width:0%"></div></div><span class="score-val" id="m-fib">0/20</span></div>
+                <div class="score-row"><span class="score-label">Liquidity</span><div class="score-bar-bg"><div class="score-bar-fill c-liq" style="width:0%"></div></div><span class="score-val" id="m-liq">0/25</span></div>
+                <div class="score-row"><span class="score-label">Candlestick</span><div class="score-bar-bg"><div class="score-bar-fill c-cdl" style="width:0%"></div></div><span class="score-val" id="m-cdl">0/30</span></div>
+                <div class="score-row"><span class="score-label">Triple Screen</span><div class="score-bar-bg"><div class="score-bar-fill c-ts" style="width:0%"></div></div><span class="score-val" id="m-ts">0/30</span></div>
+            </div>
+            <div style="margin-top: 8px;">
+                <div class="stat-row"><span class="stat-label">Zone Status</span><span class="stat-value" id="zoneVal">---</span></div>
+                <div class="stat-row"><span class="stat-label">Candle Pattern</span><span class="stat-value" id="candleVal">---</span></div>
+                <div class="stat-row"><span class="stat-label">HTF / LTF Impulse</span><span class="stat-value" id="impulseVal">---</span></div>
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="card">
+            <div class="card-title">Performance (All Time)</div>
+            <div class="grid" style="margin-bottom: 8px;">
+                <div>
+                    <div class="stat-row"><span class="stat-label">Trades</span><span class="stat-value" id="totalTrades">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Winrate</span><span class="stat-value" id="winrateVal">0%</span></div>
+                    <div class="stat-row"><span class="stat-label">Total PnL</span><span class="stat-value" id="pnlVal">$0</span></div>
+                </div>
+                <div>
+                    <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value green" id="winsVal">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Losses</span><span class="stat-value red" id="lossesVal">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Positions Open</span><span class="stat-value" id="openPosVal">0</span></div>
+                </div>
+            </div>
+            <div style="position: relative; height: 100px; margin-top: 4px;">
+                <canvas id="pnlChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Trade History -->
+    <div class="card" style="margin-bottom: 12px;">
+        <div class="card-title">Recent Trades</div>
+        <table>
+            <thead><tr>
+                <th>Time</th><th>Dir</th><th>Entry</th><th>Exit</th><th>Score</th><th>Pattern</th><th>Result</th><th>PnL</th>
+            </tr></thead>
+            <tbody id="tradeHistory">
+                <tr><td colspan="8" style="text-align:center;color:#444;">No trades yet</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Row 4: Logs -->
+    <div class="card">
+        <div class="card-title">Bot Logs (last 50)</div>
+        <div class="log-container" id="logContainer">
+            <div class="log-line" style="color:#444;">Waiting for bot data...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+let pnlChart = null;
+let lastData = null;
+
+function updateDashboard(data) {
+    const state = data.state || {};
+    const stats = data.stats || {};
+    const logs = data.logs || [];
+    const breakdown = state.breakdown || {};
+    const gates = state.gates || {};
+
+    document.getElementById('refreshTime').textContent = '0';
+
+    // Status
+    const online = state.bot_running || false;
+    const dot = document.getElementById('statusDot');
+    dot.className = 'status-dot ' + (online ? 'online' : 'offline');
+    document.getElementById('statusText').textContent = online ? 'Bot Running' : 'Idle';
+    document.getElementById('timestamp').textContent = data.timestamp || '';
+
+    // Price
+    const price = state.current_price || 0;
+    if (price) {
+        document.getElementById('priceVal').textContent = '$' + price.toFixed(2);
+    }
+    document.getElementById('sessionVal').textContent = state.session || '---';
+    document.getElementById('spreadVal').textContent = state.spread || '---';
+    document.getElementById('atrVal').textContent = state.atr ? '$' + state.atr.toFixed(2) : '---';
+
+    // Score
+    const score = state.total_score || 0;
+    const scoreEl = document.getElementById('scoreVal');
+    scoreEl.textContent = score;
+    if (score >= 120) scoreEl.style.color = '#22c55e';
+    else if (score >= 80) scoreEl.style.color = '#f59e0b';
+    else scoreEl.style.color = '#ef4444';
+    document.getElementById('directionVal').textContent = state.direction || 'NEUTRAL';
+
+    // Modules
+    const b = breakdown;
+    const modules = [
+        {id:'snd', max:30}, {id:'smc', max:45}, {id:'elliot', max:20},
+        {id:'fib', max:20}, {id:'liquidity', max:25}, {id:'candlestick', max:30},
+        {id:'triple_screen', max:30},
+    ];
+    modules.forEach(m => {
+        const score = (b[m.id] && b[m.id].score) || 0;
+        const pct = Math.min(100, (score / m.max) * 100);
+        const bar = document.querySelector(`#m-${m.id}`);
+        if (bar) {
+            bar.previousElementSibling.style.width = pct + '%';
+            bar.textContent = score + '/' + m.max;
+        }
+    });
+
+    // Candlestick pattern
+    if (b.candlestick) {
+        document.getElementById('candleVal').textContent = 
+            (b.candlestick.confirmed ? b.candlestick.type + '(' + b.candlestick.strength + '/3)' : 'None');
+    }
+    if (b.triple_screen) {
+        document.getElementById('impulseVal').textContent = 
+            (b.triple_screen.htf_impulse || '-') + ' / ' + (b.triple_screen.ltf_impulse || '-');
+    }
+    document.getElementById('zoneVal').textContent = state.zone_status || '---';
+
+    // Gates
+    const gateMap = {g1:'score_gate', g2:'zone_gate', g3:'confirmation_gate', g4:'strength_gate'};
+    Object.entries(gateMap).forEach(([id, key]) => {
+        const passed = gates[key] || false;
+        const el = document.getElementById(id);
+        el.className = 'gate ' + (passed ? 'pass' : 'fail');
+        el.querySelector('.gate-status').textContent = passed ? 'PASS' : 'FAIL';
+    });
+
+    // Recommendation
+    const rec = state.recommendation || 'WAIT';
+    const badge = document.getElementById('recBadge');
+    badge.textContent = rec;
+    badge.className = 'badge ' + (rec === 'ENTRY' ? 'entry' : rec === 'WAIT' ? 'wait' : 'skip');
+
+    // Performance
+    document.getElementById('totalTrades').textContent = stats.total_trades || 0;
+    document.getElementById('winrateVal').textContent = (stats.winrate || 0) + '%';
+    document.getElementById('pnlVal').textContent = '$' + (stats.total_pnl || 0);
+    document.getElementById('winsVal').textContent = stats.wins || 0;
+    document.getElementById('lossesVal').textContent = stats.losses || 0;
+    document.getElementById('openPosVal').textContent = state.open_positions || 0;
+
+    // PnL coloring
+    const pnl = stats.total_pnl || 0;
+    document.getElementById('pnlVal').className = 'stat-value ' + (pnl >= 0 ? 'green' : 'red');
+
+    // PnL Mini Chart
+    if (stats.history && stats.history.length > 0) {
+        updatePnlChart(stats.history);
+    }
+
+    // Trade history table
+    const tbody = document.getElementById('tradeHistory');
+    if (stats.history && stats.history.length > 0) {
+        tbody.innerHTML = stats.history.slice(0, 15).map(t => {
+            const pnlClass = t.net_pnl >= 0 ? 'win' : 'loss';
+            return `<tr>
+                <td>${t.entry_time ? t.entry_time.slice(5, 16) : '-'}</td>
+                <td>${t.direction || '-'}</td>
+                <td>$${(t.entry_price || 0).toFixed(2)}</td>
+                <td>$${(t.exit_price || 0).toFixed(2)}</td>
+                <td>${t.score || '-'}</td>
+                <td>${t.candle_pattern || '-'}</td>
+                <td class="${pnlClass}">${t.result || '-'}</td>
+                <td class="${pnlClass}">$${(t.net_pnl || 0).toFixed(2)}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // Logs
+    const logContainer = document.getElementById('logContainer');
+    if (logs.length > 0) {
+        logContainer.innerHTML = logs.map(l => {
+            const lvl = l.includes('|ERROR') || l.includes('|WARN') || l.includes('|INFO') ? 'lvl-' + l.split('|')[1]?.split('|')[0] : '';
+            const time = l.slice(0, 8);
+            return `<div class="log-line"><span class="time">${time}</span> ${l.slice(8)}</div>`;
+        }).join('');
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    lastData = data;
+}
+
+function updatePnlChart(history) {
+    const ctx = document.getElementById('pnlChart').getContext('2d');
+    const labels = history.slice().reverse().map(t => t.entry_time ? t.entry_time.slice(5, 10) : '');
+    const values = [];
+    let running = 0;
+    history.slice().reverse().forEach(t => {
+        running += t.net_pnl || 0;
+        values.push(running);
+    });
+
+    if (pnlChart) { pnlChart.destroy(); }
+
+    pnlChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'PnL',
+                data: values,
+                borderColor: values[values.length-1] >= 0 ? '#22c55e' : '#ef4444',
+                backgroundColor: values[values.length-1] >= 0 ? '#22c55e22' : '#ef444422',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: { 
+                    display: true,
+                    grid: { color: '#1a1a2a' },
+                    ticks: { color: '#666', font: { size: 9 } },
+                }
+            },
+            animation: { duration: 300 },
+        }
+    });
+}
+
+function fetchData() {
+    fetch('/api/all')
+        .then(r => r.json())
+        .then(data => {
+            updateDashboard(data);
+            document.getElementById('refreshTime').textContent = '0';
+        })
+        .catch(() => {
+            document.getElementById('statusText').textContent = 'Disconnected';
+            document.getElementById('statusDot').className = 'status-dot offline';
+        });
+}
+
+// Auto-refresh every 2 seconds
+let seconds = 0;
+setInterval(() => {
+    seconds++;
+    document.getElementById('refreshTime').textContent = seconds;
+    fetchData();
+}, 2000);
+
+// Initial load
+fetchData();
+</script>
+</body>
+</html>
