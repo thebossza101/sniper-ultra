@@ -1,33 +1,32 @@
 {
   "bot_running": true,
-  "timestamp": "18:54:54",
-  "current_price": 4339.554,
+  "timestamp": "20:29:34",
+  "current_price": 4336.903,
   "spread": 280,
-  "session": "LONDON",
-  "atr": 5.92,
-  "total_score": 79,
+  "session": "NY_LONDON",
+  "atr": 6.87,
+  "total_score": 81,
   "direction": "NEUTRAL",
   "zone_status": "NO_ZONE",
   "recommendation": "WAIT",
   "open_positions": 0,
-  "gates": {
-    "candle_gate": false,
-    "zone_gate": false,
-    "vote_gate": false,
-    "noconflict_gate": true
+  "candle": {
+    "ok": true,
+    "type": "DOJI",
+    "strength": 2,
+    "direction": "NEUTRAL"
   },
-  "voting": {
-    "bull": 2,
-    "bear": 0,
-    "alignment": "NEUTRAL"
+  "alignment": {
+    "bull": 0,
+    "bear": 0
   },
   "breakdown": {
     "snd": {
-      "score": 10,
+      "score": 5,
       "max": 30
     },
     "smc": {
-      "score": 13,
+      "score": 5,
       "max": 45
     },
     "elliot": {
@@ -39,22 +38,22 @@
       "max": 20
     },
     "liquidity": {
-      "score": 20,
+      "score": 25,
       "max": 25
     },
     "candlestick": {
-      "score": 0,
+      "score": 2,
       "max": 30,
-      "confirmed": false,
-      "type": "",
-      "strength": 0
+      "confirmed": true,
+      "type": "DOJI",
+      "strength": 2
     },
     "triple_screen": {
-      "score": 20,
+      "score": 0,
       "max": 30,
-      "htf_impulse": "GREEN",
+      "htf_impulse": "BLUE",
       "ltf_impulse": "RED"
     }
   },
-  "last_seen": "11:54:54"
+  "last_seen": "13:29:34"
 }

@@ -71,7 +71,7 @@ def calculate_full_confluence(data_dict, current_price):
     result['zone_status'] = snd['zone_status']
 
     # ─── KONDISI 1: CANDLE ───
-    candle_ok = candle['confirmed'] and candle['strength'] >= 2
+    candle_ok = candle['confirmed'] and candle['strength'] >= 1  # Lowered from 2
     result['candle'] = {
         'ok': candle_ok,
         'type': candle['type'],
@@ -116,10 +116,10 @@ def calculate_full_confluence(data_dict, current_price):
 
     result['alignment'] = {'bull': buy, 'bear': sell}
 
-    # Tentukan arah
-    if buy > sell and buy >= 3:
+    # Tentukan arah — lowered threshold from 3 to 2 for more entries
+    if buy > sell and buy >= 2:
         arah = 'BUY'
-    elif sell > buy and sell >= 3:
+    elif sell > buy and sell >= 2:
         arah = 'SELL'
     else:
         arah = 'NEUTRAL'

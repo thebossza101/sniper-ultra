@@ -58,12 +58,12 @@ def signal_alert(confluence):
         f"",
         f"<b>Modules:</b>",
         f"SnD: {b['snd']['score']}/30 | SMC: {b['smc']['score']}/45",
-        f"Cdl: {b['candlestick']['type']}({b['candlestick']['strength']}/3)",
-        f"TS: {b['triple_screen']['htf_impulse']}/{b['triple_screen']['ltf_impulse']}",
+        f"Cdl: {b['cdl']['type']}({b['cdl']['str']}/3)",
+        f"TS: {b['ts']['htf']}/{b['ts']['ltf']}",
         f"",
         f"<b>Recommendation: {confluence['recommendation']}</b>",
     ]
-    return '\n'.join(lines)
+    return '\\n'.join(lines)
 
 def entry_alert(result, direction):
     """Format trade entry"""

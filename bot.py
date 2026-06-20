@@ -66,7 +66,8 @@ def print_analysis(confluence, session):
 
     # CANDLE STATUS
     cdl_icon = '✅' if cdl['ok'] else '❌'
-    print(f"CANDLE: {cdl_icon} {cdl['type']}({cdl['strength']}/3) {cdl['direction']}")
+    cdl_display = f"{cdl['type']}({cdl['strength']}/3)" if cdl['type'] else f"({cdl['strength']}/3)"
+    print(f"CANDLE: {cdl_icon} {cdl_display} {cdl['direction']}")
 
     # ALIGNMENT
     bull_bar = '#' * min(al['bull'], 10)
@@ -115,19 +116,19 @@ def write_state(confluence, session, info, bot_running=True):
             'smc': {'score': b['smc']['score'], 'max': 45},
             'elliot': {'score': b['elliot']['score'], 'max': 20},
             'fib': {'score': b['fib']['score'], 'max': 20},
-            'liquidity': {'score': b['liquidity']['score'], 'max': 25},
+            'liquidity': {'score': b['liq']['score'], 'max': 25},
             'candlestick': {
-                'score': b['candlestick']['score'],
+                'score': b['cdl']['str'],
                 'max': 30,
-                'confirmed': b['candlestick']['confirmed'],
-                'type': b['candlestick']['type'],
-                'strength': b['candlestick']['strength'],
+                'confirmed': b['cdl']['ok'],
+                'type': b['cdl']['type'],
+                'strength': b['cdl']['str'],
             },
             'triple_screen': {
-                'score': b['triple_screen']['score'],
+                'score': 0,
                 'max': 30,
-                'htf_impulse': b['triple_screen']['htf_impulse'],
-                'ltf_impulse': b['triple_screen']['ltf_impulse'],
+                'htf_impulse': b['ts']['htf'],
+                'ltf_impulse': b['ts']['ltf'],
             },
         },
     }
@@ -318,7 +319,7 @@ def main():
                         log.warn(f"VPS|Send error: {e}")
 
             # 3. Print every 10 loops or on ENTRY/NO_CANDLE
-            if loop_count % 10 == 0 or confluence['recommendation'] in ('ENTRY', 'NO_CANDLE'):
+            if loop_count % 5 == 0 or confluence['recommendation'] in ('ENTRY', 'NO_CANDLE', 'MISALIGNED'):
                 print_analysis(confluence, session)
 
             # TG signal notification (max every 60s, avoid spam)
