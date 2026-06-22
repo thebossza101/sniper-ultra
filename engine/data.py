@@ -81,6 +81,23 @@ def get_symbol_info():
         "ask": tick.ask if tick else 0,
     }
 
+def get_filling_mode(symbol=None):
+    """Deteksi filling mode yang didukung broker untuk symbol ini.
+    Beda broker beda support: Exness=IOC, IUX/lainnya kadang FOK/RETURN.
+    Pakai bitmask symbol_info.filling_mode supaya order_send tak ditolak."""
+    sym = symbol or SYMBOL
+    info = mt5.symbol_info(sym)
+    if info is None:
+        return mt5.ORDER_FILLING_IOC
+    mode = info.filling_mode
+    # SYMBOL_FILLING_FOK=1, SYMBOL_FILLING_IOC=2 (bitmask)
+    if mode & 2:
+        return mt5.ORDER_FILLING_IOC
+    if mode & 1:
+        return mt5.ORDER_FILLING_FOK
+    return mt5.ORDER_FILLING_RETURN
+
+
 def get_open_positions():
     """Dapatkan open positions bot ini"""
     positions = mt5.positions_get(symbol=SYMBOL)

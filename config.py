@@ -5,9 +5,9 @@ Exness XAUUSD | 1:2000 | $500
 from datetime import time, timezone
 
 # ─── BROKER ───
-SYMBOL = "XAUUSDm"
-BROKER = "Exness"
-SERVER = None           # Diisi manual: "Exness-MT5Trial14" atau server real
+SYMBOL = "XAUUSD.iux"
+BROKER = "IUX"
+SERVER = "IUXMarkets-Live"   # IUX. Exness: "Exness-MT5Trial14" / server real
 LOGIN = 0               # Diisi manual
 PASSWORD = ""           # Diisi manual
 MAGIC = 420690          # Unique bot ID

@@ -4,7 +4,7 @@ SNIPER ULTRA — Entry Execution (4-Gate + MT5 Order Placement)
 import time
 import MetaTrader5 as mt5
 from config import SYMBOL, MAGIC, LOT_MIN, LOT_STEP
-from engine.data import get_symbol_info, get_open_positions, check_mt5_health, calc_atr
+from engine.data import get_symbol_info, get_open_positions, check_mt5_health, calc_atr, get_filling_mode
 from trading.risk import calc_position_size, calc_sl_tp, check_daily_limits
 from utils.logger import log
 from engine.confluence import calculate_full_confluence
@@ -77,7 +77,7 @@ def execute_trade(confluence, data_dict, daily_state):
         "magic": MAGIC,
         "comment": f"SU_V1_{direction[0]}",
         "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_IOC,
+        "type_filling": get_filling_mode(SYMBOL),
     }
 
     # Send order
