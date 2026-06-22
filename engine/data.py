@@ -2,7 +2,12 @@
 SNIPER ULTRA — MT5 Data Connector
 Fetch OHLCV multi-TF, ATR, symbol info
 """
-import MetaTrader5 as mt5
+try:
+    import MetaTrader5 as mt5
+except ImportError:
+    # MetaTrader5 hanya tersedia di Windows. Mode offline (test.py) tidak butuh mt5,
+    # cukup fungsi murni seperti calc_atr. Fungsi yang pakai mt5 akan error saat dipanggil.
+    mt5 = None
 import pandas as pd
 import numpy as np
 from datetime import datetime, timezone

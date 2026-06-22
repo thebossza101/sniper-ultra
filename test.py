@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-def fetch_binance_ohlcv(symbol="XAUUSDT", interval="1h", limit=100):
+def fetch_binance_ohlcv(symbol="XAUTUSDT", interval="1h", limit=100):
     """Fetch OHLCV from Binance (no auth needed)"""
     url = f"https://api.binance.com/api/v3/klines"
     params = {"symbol": symbol, "interval": interval, "limit": limit}
@@ -32,7 +32,7 @@ def fetch_multi_tf():
     result = {}
     for tf, limit in [("1h", 200), ("15m", 200), ("5m", 150), ("1m", 100)]:
         try:
-            df = fetch_binance_ohlcv("XAUUSDT", tf, limit)
+            df = fetch_binance_ohlcv("XAUTUSDT", tf, limit)
             tf_key = {"1h": "H1", "15m": "M15", "5m": "M5", "1m": "M1"}[tf]
             result[tf_key] = df
             print(f"  [OK] {tf_key}: {len(df)} candles")
@@ -120,16 +120,16 @@ def run_test():
     print(f"  Direction: {confluence['direction']}")
     print(f"  Zone: {confluence['zone_status']}")
     print(f"  ATR: ${confluence['atr']:.2f}")
-    print(f"\n  GATES: ", end="")
-    for k, v in confluence['gates'].items():
-        status = "[OK]" if v else "[X]"
-        print(f"{status} {k}", end="  ")
-    print(f"\n\n  RECOMMENDATION: {confluence['recommendation']}")
+    cdl = confluence['candle']
+    al = confluence['alignment']
+    print(f"\n  CONDITION 1 (Candle): {'[OK]' if cdl['ok'] else '[X]'} "
+          f"{cdl['type']} | dir={cdl['direction']} | strength={cdl['strength']}")
+    print(f"  CONDITION 2 (Alignment): bull={al['bull']} vs bear={al['bear']} -> {confluence['direction']}")
+    print(f"\n  RECOMMENDATION: {confluence['recommendation']}")
 
-    if confluence['entry_signal']:
-        es = confluence['entry_signal']
-        print(f"\n  >>> ENTRY SIGNAL: {es['direction']} @ ${es['price']:.2f}")
-        print(f"      Pattern: {es['candle_pattern']} | Reliability: {es['reliability']}")
+    if confluence['recommendation'] == 'ENTRY':
+        print(f"\n  >>> ENTRY SIGNAL: {confluence['direction']} @ ${current_price:.2f}")
+        print(f"      Pattern: {cdl['type']} | Strength: {cdl['strength']}/3")
 
     # Save report
     report = {
@@ -138,7 +138,8 @@ def run_test():
         'score': confluence['total_score'],
         'direction': confluence['direction'],
         'zone': confluence['zone_status'],
-        'gates': confluence['gates'],
+        'candle': confluence['candle'],
+        'alignment': confluence['alignment'],
         'recommendation': confluence['recommendation'],
         'modules': {
             'snd': snd['score'], 'smc': smc['score'],
